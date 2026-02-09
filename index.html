@@ -24,14 +24,13 @@
             <h1 class="text-6xl font-black mb-4 tracking-tighter italic">
                 KANJI<span class="text-indigo-500">MASTER</span>
             </h1>
-            <p class="text-slate-400 text-lg">自分専用の漢字辞書で、語彙を圧倒的に。 </p>
+            <p class="text-slate-400 text-lg">自分専用の漢字辞書で、語彙を圧倒的に。</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-            
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <div class="glass p-8 rounded-[2rem] flex items-center justify-between group glow transition-all">
                 <div>
-                    <p class="text-slate-400 text-sm font-bold uppercase">登録済み漢字</p>
+                    <p class="text-slate-400 text-sm font-bold uppercase tracking-widest">全フォルダー合計</p>
                     <div id="stat-count" class="text-5xl font-black mt-1">0</div>
                 </div>
                 <div class="h-16 w-16 rounded-full bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-2xl group-hover:scale-110 transition-transform">
@@ -41,54 +40,73 @@
 
             <div class="glass p-8 rounded-[2rem] flex items-center justify-between group glow transition-all">
                 <div>
-                    <p class="text-slate-400 text-sm font-bold uppercase">習得レベル</p>
+                    <p class="text-slate-400 text-sm font-bold uppercase tracking-widest">全体の習得率</p>
                     <div id="stat-progress" class="text-5xl font-black mt-1 text-emerald-400">0%</div>
                 </div>
                 <div class="h-16 w-16 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 text-2xl group-hover:scale-110 transition-transform">
                     <i class="fas fa-trophy"></i>
                 </div>
             </div>
-
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <a href="app.html?mode=study" class="bg-indigo-600 hover:bg-indigo-500 p-6 rounded-3xl flex items-center justify-between transition-all group overflow-hidden relative">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="app.html" class="bg-indigo-600 hover:bg-indigo-500 p-6 rounded-3xl flex flex-col justify-between transition-all group overflow-hidden relative min-h-[160px]">
                 <div class="relative z-10">
-                    <span class="block text-sm opacity-80 font-bold">READY TO STUDY?</span>
-                    <span class="text-2xl font-black">学習を開始する</span>
+                    <span class="block text-xs opacity-80 font-bold mb-1">SELECT FOLDER</span>
+                    <span class="text-2xl font-black leading-tight">フォルダーを<br>選んで学習</span>
                 </div>
-                <i class="fas fa-arrow-right text-3xl opacity-30 group-hover:translate-x-2 transition-transform relative z-10"></i>
-                <div class="absolute -right-4 -bottom-4 text-8xl opacity-10 rotate-12 group-hover:rotate-0 transition-transform">
-                    <i class="fas fa-graduation-cap"></i>
+                <i class="fas fa-arrow-right self-end text-2xl opacity-50 group-hover:translate-x-2 transition-transform"></i>
+                <div class="absolute -right-2 -bottom-2 text-7xl opacity-10 rotate-12 group-hover:rotate-0 transition-transform">
+                    <i class="fas fa-folder-open"></i>
                 </div>
             </a>
 
-            <a href="app.html?mode=manage" class="glass hover:bg-white/10 p-6 rounded-3xl flex items-center justify-between transition-all group overflow-hidden relative border-dashed">
+            <a href="app.html?mode=focus" class="bg-rose-600 hover:bg-rose-500 p-6 rounded-3xl flex flex-col justify-between transition-all group overflow-hidden relative min-h-[160px]">
                 <div class="relative z-10">
-                    <span class="block text-sm opacity-80 font-bold">DATABASE</span>
-                    <span class="text-2xl font-black text-slate-200">漢字を管理・追加</span>
+                    <span class="block text-xs opacity-80 font-bold mb-1">STREAK MODE</span>
+                    <span class="text-2xl font-black leading-tight">全フォルダー<br>集中復習</span>
                 </div>
-                <i class="fas fa-cog text-3xl opacity-30 group-hover:rotate-90 transition-transform relative z-10"></i>
-                <div class="absolute -right-4 -bottom-4 text-8xl opacity-5 group-hover:opacity-10 transition-all">
+                <i class="fas fa-fire self-end text-2xl opacity-50 animate-pulse"></i>
+                <div class="absolute -right-2 -bottom-2 text-7xl opacity-10 rotate-12 group-hover:rotate-0 transition-transform">
+                    <i class="fas fa-bolt"></i>
+                </div>
+            </a>
+
+            <a href="app.html" class="glass hover:bg-white/10 p-6 rounded-3xl flex flex-col justify-between transition-all group overflow-hidden relative min-h-[160px] border-dashed">
+                <div class="relative z-10">
+                    <span class="block text-xs opacity-80 font-bold mb-1">DATABASE</span>
+                    <span class="text-2xl font-black text-slate-200">漢字の管理<br>& 追加</span>
+                </div>
+                <i class="fas fa-cog self-end text-2xl opacity-50 group-hover:rotate-90 transition-transform"></i>
+                <div class="absolute -right-2 -bottom-2 text-7xl opacity-5 group-hover:opacity-10 transition-all">
                     <i class="fas fa-edit"></i>
                 </div>
             </a>
         </div>
 
-        <p class="text-center mt-12 text-slate-500 text-sm">
-           study ad-hub 
+        <p class="text-center mt-12 text-slate-500 text-xs tracking-widest uppercase">
+            Kanji Master Ultimate Hub • 2026
         </p>
     </div>
 
     <script>
-        // 前のページで使用しているLocalStorageキーを読み込む
-        const kanjiData = JSON.parse(localStorage.getItem('v3Kanji') || '[]');
+        // フォルダー対応の新しいキー 'kanjiFolderDb' を読み込む
+        const folderDb = JSON.parse(localStorage.getItem('kanjiFolderDb') || '{}');
+        
+        let totalKanji = 0;
+        let totalMastered = 0;
+
+        // 全フォルダーをループして統計を出す
+        Object.keys(folderDb).forEach(fId => {
+            const folder = folderDb[fId];
+            totalKanji += folder.items.length;
+            totalMastered += folder.items.filter(i => i.score >= 3).length;
+        });
         
         // データの反映
-        document.getElementById('stat-count').innerText = kanjiData.length;
+        document.getElementById('stat-count').innerText = totalKanji;
         
-        const mastered = kanjiData.filter(i => i.score >= 3).length;
-        const percent = kanjiData.length === 0 ? 0 : Math.round((mastered / kanjiData.length) * 100);
+        const percent = totalKanji === 0 ? 0 : Math.round((totalMastered / totalKanji) * 100);
         document.getElementById('stat-progress').innerText = percent + '%';
     </script>
 </body>
