@@ -1,134 +1,166 @@
 
-</html>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanji Study Pro Max</title>
+    <title>Kanji Master Ultimate</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         .page { display: none; }
-        .page.active { display: block; }
-        .tab-active { border-bottom: 4px solid #4f46e5; color: #4f46e5; }
+        .page.active { display: block; animation: fadeIn 0.3s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .tab-active { border-bottom: 4px solid #6366f1; color: #6366f1; }
+        .toast { transform: translateX(200%); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
+        .toast.show { transform: translateX(0); }
     </style>
 </head>
-<body class="bg-slate-100 min-h-screen pb-10">
+<body class="bg-slate-50 min-h-screen pb-10 font-sans text-slate-800">
 
-    <nav class="bg-white shadow-sm mb-6 sticky top-0 z-10">
+    <div id="toast" class="toast fixed top-5 right-5 z-50 bg-emerald-500 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-2">
+        <i class="fas fa-check-circle"></i> <span id="toastMsg">追加しました</span>
+    </div>
+
+    <nav class="bg-white shadow-md sticky top-0 z-40">
         <div class="max-w-4xl mx-auto flex justify-around">
-            <button onclick="showPage('manage')" id="tab-manage" class="flex-1 py-4 font-bold text-slate-500 transition-all tab-active">
-                <i class="fas fa-edit mr-2"></i>管理・登録
-            </button>
-            <button onclick="showPage('study')" id="tab-study" class="flex-1 py-4 font-bold text-slate-500 transition-all">
-                <i class="fas fa-graduation-cap mr-2"></i>学習モード
-            </button>
+            <button onclick="showPage('manage')" id="tab-manage" class="flex-1 py-4 font-bold text-slate-400 transition-all tab-active">管理</button>
+            <button onclick="showPage('study')" id="tab-study" class="flex-1 py-4 font-bold text-slate-400 transition-all">学習モード</button>
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-4">
+    <main class="max-w-3xl mx-auto px-4 mt-6">
         
         <div id="page-manage" class="page active">
-            <section class="bg-white rounded-2xl shadow-sm p-6 mb-6">
-                <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-plus text-indigo-500"></i> 新規追加</h2>
-                <div class="grid grid-cols-1 gap-3">
-                    <input type="text" id="kInput" placeholder="漢字 (例: 杜撰)" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-300">
-                    <input type="text" id="yInput" placeholder="読み (例: ずさん)" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-300">
-                    <textarea id="mInput" placeholder="意味・例文 (例: 物事の仕方がいい加減なこと)" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-300 h-24"></textarea>
-                    <button onclick="addKanji()" class="bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all">リストに追加</button>
+            <div class="bg-white p-6 rounded-3xl shadow-sm mb-6 flex items-center justify-between border border-slate-100">
+                <div>
+                    <h3 class="text-slate-400 text-sm font-bold uppercase tracking-wider">全体の習得率</h3>
+                    <div class="text-3xl font-black text-indigo-600"><span id="totalProgress">0</span>%</div>
+                </div>
+                <div class="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="progressBar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <section class="bg-white rounded-3xl shadow-sm p-6 mb-6 border border-slate-100">
+                <div class="space-y-4">
+                    <div class="flex gap-2">
+                        <input type="text" id="kInput" placeholder="漢字" class="w-1/3 p-3 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-300">
+                        <input type="text" id="yInput" placeholder="読み" class="w-2/3 p-3 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-300">
+                    </div>
+                    <textarea id="mInput" placeholder="意味・例文（任意）" class="w-full p-3 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-300 h-20"></textarea>
+                    <button onclick="addKanji()" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                        リストに追加する
+                    </button>
                 </div>
             </section>
 
-            <div id="kanjiList" class="space-y-3">
-                </div>
+            <div id="kanjiList" class="grid grid-cols-1 gap-3"></div>
         </div>
 
         <div id="page-study" class="page">
-            <div id="quizContainer" class="bg-white rounded-3xl shadow-xl overflow-hidden min-h-[400px] flex flex-col items-center justify-center p-8 text-center border-t-8 border-indigo-500">
-                <div id="emptyMsg" class="text-slate-400">漢字を3つ以上登録すると開始できます</div>
-            </div>
+            <div id="quizContainer" class="bg-white rounded-[40px] shadow-2xl p-10 text-center min-h-[450px] flex flex-col items-center justify-center relative">
+                </div>
             
-            <div id="quizControls" class="hidden mt-6 flex justify-center gap-4">
-                <button onclick="checkAnswer(false)" class="bg-rose-100 text-rose-600 px-8 py-4 rounded-2xl font-bold hover:bg-rose-200 transition-all flex flex-col items-center shadow-sm">
-                    <i class="fas fa-times text-2xl mb-1"></i> まだ自信ない
+            <div id="quizControls" class="hidden mt-8 grid grid-cols-2 gap-4">
+                <button onclick="checkAnswer(false)" class="bg-white border-2 border-rose-100 text-rose-500 p-5 rounded-3xl font-bold hover:bg-rose-50 transition-all shadow-sm">
+                    <i class="fas fa-times-circle text-2xl mb-1"></i><br>苦手かも
                 </button>
-                <button onclick="checkAnswer(true)" class="bg-emerald-100 text-emerald-600 px-8 py-4 rounded-2xl font-bold hover:bg-emerald-200 transition-all flex flex-col items-center shadow-sm">
-                    <i class="fas fa-check text-2xl mb-1"></i> 覚えた！
+                <button onclick="checkAnswer(true)" class="bg-white border-2 border-emerald-100 text-emerald-500 p-5 rounded-3xl font-bold hover:bg-emerald-50 transition-all shadow-sm">
+                    <i class="fas fa-check-circle text-2xl mb-1"></i><br>覚えた！
                 </button>
             </div>
         </div>
-
     </main>
 
     <script>
-        let kanjiData = JSON.parse(localStorage.getItem('ultraKanji') || '[]');
+        let kanjiData = JSON.parse(localStorage.getItem('v3Kanji') || '[]');
         let currentIdx = -1;
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 2000);
+        }
 
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
             document.getElementById('page-' + pageId).classList.add('active');
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
             document.getElementById('tab-' + pageId).classList.add('tab-active');
-            
             if (pageId === 'study') startQuiz();
             if (pageId === 'manage') updateList();
         }
 
         function addKanji() {
             const k = document.getElementById('kInput'), y = document.getElementById('yInput'), m = document.getElementById('mInput');
-            if (!k.value || !y.value) return alert("漢字と読みは必須です！");
+            if (!k.value || !y.value) return;
             
-            kanjiData.unshift({ 
-                k: k.value, y: y.value, m: m.value, 
-                score: 0, id: Date.now() 
-            });
-            localStorage.setItem('ultraKanji', JSON.stringify(kanjiData));
+            kanjiData.unshift({ k: k.value, y: y.value, m: m.value, score: 0, id: Date.now() });
+            localStorage.setItem('v3Kanji', JSON.stringify(kanjiData));
             k.value = ''; y.value = ''; m.value = '';
             updateList();
-            alert("追加しました！");
+            showToast("漢字を追加しました！");
         }
 
         function updateList() {
             const list = document.getElementById('kanjiList');
+            const total = kanjiData.length;
+            const mastered = kanjiData.filter(i => i.score >= 3).length;
+            const percent = total === 0 ? 0 : Math.round((mastered / total) * 100);
+            
+            document.getElementById('totalProgress').innerText = percent;
+            document.getElementById('progressBar').style.width = percent + '%';
+
             list.innerHTML = kanjiData.map(item => `
-                <div class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center border-l-4 border-indigo-400">
+                <div class="bg-white p-5 rounded-2xl flex justify-between items-center border border-slate-100 group">
                     <div>
-                        <div class="text-xl font-bold">${item.k} <span class="text-sm font-normal text-slate-400">(${item.y})</span></div>
-                        <div class="text-xs text-slate-500 mt-1">${item.m || '意味なし'}</div>
-                        <div class="text-[10px] mt-2 bg-slate-100 inline-block px-2 py-0.5 rounded text-indigo-600 font-bold">習得度: ${item.score}回</div>
+                        <div class="text-xl font-bold text-slate-700">${item.k} <span class="text-sm font-medium text-slate-400 ml-2">${item.y}</span></div>
+                        <div class="text-xs text-indigo-400 mt-1 font-bold italic">MASTER LEVEL: ${item.score}</div>
                     </div>
-                    <button onclick="deleteKanji(${item.id})" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button>
+                    <button onclick="deleteKanji(${item.id})" class="text-slate-200 hover:text-rose-400 transition-colors"><i class="fas fa-trash-alt"></i></button>
                 </div>
             `).join('');
         }
 
         function deleteKanji(id) {
             kanjiData = kanjiData.filter(i => i.id !== id);
-            localStorage.setItem('ultraKanji', JSON.stringify(kanjiData));
+            localStorage.setItem('v3Kanji', JSON.stringify(kanjiData));
             updateList();
         }
 
-        // --- クイズロジック ---
         function startQuiz() {
-            if (kanjiData.length < 1) return;
+            if (kanjiData.length === 0) {
+                document.getElementById('quizContainer').innerHTML = "<p class='text-slate-400'>まずは管理画面から漢字を登録してください</p>";
+                document.getElementById('quizControls').classList.add('hidden');
+                return;
+            }
             document.getElementById('quizControls').classList.remove('hidden');
             nextQuestion();
         }
 
         function nextQuestion() {
-            currentIdx = Math.floor(Math.random() * kanjiData.length);
+            // スコアが低いものを優先的に選ぶ（重み付け抽選）
+            const pool = [];
+            kanjiData.forEach((item, idx) => {
+                const weight = Math.max(1, 5 - item.score); // スコアが低いほど多くプールに入れる
+                for(let i=0; i<weight; i++) pool.push(idx);
+            });
+            currentIdx = pool[Math.floor(Math.random() * pool.length)];
             const item = kanjiData[currentIdx];
-            const container = document.getElementById('quizContainer');
             
-            container.innerHTML = `
-                <div class="w-full">
-                    <div class="text-7xl font-bold text-slate-800 mb-6 animate-bounce">${item.k}</div>
-                    <div id="answerArea" class="hidden space-y-4">
-                        <div class="text-3xl font-bold text-indigo-600 border-t pt-4">${item.y}</div>
-                        <div class="text-lg text-slate-600 bg-indigo-50 p-4 rounded-xl">${item.m || '（意味の登録はありません）'}</div>
+            document.getElementById('quizContainer').innerHTML = `
+                <div class="animate-in fade-in zoom-in duration-300">
+                    <div class="text-sm font-black text-indigo-300 mb-4 tracking-widest uppercase">Question</div>
+                    <div class="text-8xl font-black text-slate-800 mb-8">${item.k}</div>
+                    <div id="answerArea" class="hidden">
+                        <div class="text-4xl font-bold text-indigo-600 mb-2">${item.y}</div>
+                        <div class="text-slate-500 bg-slate-50 p-4 rounded-2xl max-w-xs mx-auto text-sm">${item.m || '---'}</div>
                     </div>
-                    <button id="showBtn" onclick="showAnswer()" class="mt-4 text-indigo-500 font-bold underline">答えを見る</button>
+                    <button id="showBtn" onclick="showAnswer()" class="mt-4 bg-slate-100 text-slate-600 px-8 py-3 rounded-full font-bold hover:bg-slate-200 transition-all">
+                        答えを確認
+                    </button>
                 </div>
             `;
         }
@@ -139,9 +171,13 @@
         }
 
         function checkAnswer(isCorrect) {
-            if (currentIdx === -1) return;
-            if (isCorrect) kanjiData[currentIdx].score += 1;
-            localStorage.setItem('ultraKanji', JSON.stringify(kanjiData));
+            if (isCorrect) {
+                kanjiData[currentIdx].score += 1;
+                showToast("ナイス！レベルアップ！");
+            } else {
+                kanjiData[currentIdx].score = Math.max(0, kanjiData[currentIdx].score - 1);
+            }
+            localStorage.setItem('v3Kanji', JSON.stringify(kanjiData));
             nextQuestion();
         }
 
