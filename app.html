@@ -181,6 +181,13 @@
             nextQuestion();
         }
 
+window.onload = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    if (mode === 'study') showPage('study');
+    else showPage('manage');
+    updateList(); 
+}
         updateList();
     </script>
 </body>
