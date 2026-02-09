@@ -219,6 +219,12 @@
         }
         function deleteKanji(id) { folderDb[currentFolderId].items = folderDb[currentFolderId].items.filter(i=>i.id!==id); saveDb(); updateList(); }
 
+window.addEventListener('load', () => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('mode') === 'focus') {
+        startFocusMode(); // ホーム画面から直接集中モードへ
+    }
+});
         renderFolders();
     </script>
 </body>
