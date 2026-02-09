@@ -269,6 +269,14 @@
             setTimeout(() => t.classList.remove('show'), 2000);
         }
 
+        // app.html の末尾にある updateList(); の手前あたりに追加
+window.onload = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const mode = urlParams.get('mode');
+    if (mode === 'study') showPage('study');
+    else showPage('manage');
+    updateList(); 
+}
         // 起動時にフォルダー一覧を表示
         renderFolders();
     </script>
