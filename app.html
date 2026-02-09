@@ -3,87 +3,263 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanji Master | App</title>
+    <title>Kanji Master Ultimate | Folder Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700;900&display=swap');
-        body { font-family: 'Noto Sans JP', sans-serif; background: #0f172a; color: white; }
         .page { display: none; }
         .page.active { display: block; animation: fadeIn 0.3s ease; }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        .glass { background: rgba(255, 255, 255, 0.05); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.1); }
-        .tab-active { color: #6366f1; border-bottom: 3px solid #6366f1; }
+        .tab-active { border-bottom: 4px solid #6366f1; color: #6366f1; }
         .toast { transform: translateX(200%); transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); }
         .toast.show { transform: translateX(0); }
     </style>
 </head>
-<body class="min-h-screen pb-20">
+<body class="bg-slate-50 min-h-screen pb-10 font-sans text-slate-800">
 
-    <div id="toast" class="toast fixed top-5 right-5 z-50 bg-indigo-500 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-2">
-        <i class="fas fa-check-circle"></i> <span id="toastMsg">完了！</span>
+    <div id="toast" class="toast fixed top-5 right-5 z-50 bg-emerald-500 text-white px-6 py-3 rounded-2xl shadow-xl flex items-center gap-2">
+        <i class="fas fa-check-circle"></i> <span id="toastMsg">追加しました</span>
     </div>
 
-    <div id="page-folders" class="page active p-6">
-        <div class="max-w-3xl mx-auto mt-10">
-            <div class="flex justify-between items-center mb-8">
-                <h2 class="text-3xl font-black italic">FOLDERS</h2>
-                <button onclick="createFolder()" class="bg-indigo-600 px-6 py-2 rounded-xl font-bold hover:bg-indigo-500 transition-all">+ 新規作成</button>
+    <nav id="mainNav" class="bg-white shadow-md sticky top-0 z-40 hidden">
+        <div class="max-w-4xl mx-auto flex items-center">
+            <button onclick="backToFolders()" class="px-4 text-slate-400 hover:text-indigo-600">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+            <div class="flex-1 flex justify-around">
+                <button onclick="showPage('manage')" id="tab-manage" class="flex-1 py-4 font-bold text-slate-400 transition-all tab-active">管理</button>
+                <button onclick="showPage('study')" id="tab-study" class="flex-1 py-4 font-bold text-slate-400 transition-all">学習モード</button>
             </div>
-            <div id="folder-list" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto px-4 mt-6">
+        
+        <div id="page-folder-select" class="page active">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-black text-slate-700">フォルダー一覧</h2>
+                <button onclick="createNewFolder()" class="bg-indigo-600 text-white px-4 py-2 rounded-xl font-bold shadow-lg hover:bg-indigo-700 transition-all">
+                    + 新規作成
+                </button>
+            </div>
+            <div id="folderList" class="grid grid-cols-1 gap-4">
                 </div>
         </div>
-    </div>
 
-    <div id="page-main" class="page">
-        <nav class="glass sticky top-0 z-40 px-6 py-3 flex justify-between items-center mb-6">
-            <button onclick="showPage('folders')" class="text-slate-400 hover:text-white"><i class="fas fa-arrow-left"></i> 戻る</button>
-            <h3 id="current-folder-title" class="font-black text-lg text-indigo-400">FolderName</h3>
-            <div class="flex gap-6">
-                <button id="btn-manage" onclick="switchTab('manage')" class="font-bold tab-active py-1">管理</button>
-                <button id="btn-study" onclick="switchTab('study')" class="font-bold text-slate-400 py-1">学習</button>
+        <div id="page-manage" class="page">
+            <div class="mb-4 text-indigo-600 font-bold flex items-center gap-2">
+                <i class="fas fa-folder-open"></i> <span id="currentFolderNameDisplay">---</span>
             </div>
-        </nav>
+            <div class="bg-white p-6 rounded-3xl shadow-sm mb-6 flex items-center justify-between border border-slate-100">
+                <div>
+                    <h3 class="text-slate-400 text-sm font-bold uppercase tracking-wider">習得率</h3>
+                    <div class="text-3xl font-black text-indigo-600"><span id="totalProgress">0</span>%</div>
+                </div>
+                <div class="w-32 h-2 bg-slate-100 rounded-full overflow-hidden">
+                    <div id="progressBar" class="h-full bg-indigo-500 transition-all duration-500" style="width: 0%"></div>
+                </div>
+            </div>
 
-        <div class="max-w-3xl mx-auto px-6">
-            <div id="tab-content-manage">
-                <div class="glass p-6 rounded-[2rem] mb-8">
-                    <div class="grid grid-cols-1 gap-4">
-                        <div class="flex gap-2">
-                            <input type="text" id="kInput" placeholder="漢字" class="w-1/3 bg-white/5 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500">
-                            <input type="text" id="yInput" placeholder="読み" class="w-2/3 bg-white/5 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500">
-                        </div>
-                        <textarea id="mInput" placeholder="意味・例文" class="w-full bg-white/5 p-4 rounded-2xl outline-none focus:ring-2 focus:ring-indigo-500 h-20"></textarea>
-                        <button onclick="addKanji()" class="bg-indigo-600 py-4 rounded-2xl font-black hover:bg-indigo-500 transition-all">このフォルダーに追加</button>
+            <section class="bg-white rounded-3xl shadow-sm p-6 mb-6 border border-slate-100">
+                <div class="space-y-4">
+                    <div class="flex gap-2">
+                        <input type="text" id="kInput" placeholder="漢字" class="w-1/3 p-3 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-300">
+                        <input type="text" id="yInput" placeholder="読み" class="w-2/3 p-3 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-300">
                     </div>
+                    <textarea id="mInput" placeholder="意味・例文（任意）" class="w-full p-3 bg-slate-50 border-none rounded-2xl outline-none focus:ring-2 focus:ring-indigo-300 h-20"></textarea>
+                    <button onclick="addKanji()" class="w-full bg-indigo-600 text-white font-bold py-4 rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-200 transition-all active:scale-95">
+                        リストに追加する
+                    </button>
                 </div>
-                <div id="kanji-list" class="space-y-3"></div>
-            </div>
+            </section>
 
-            <div id="tab-content-study" class="hidden text-center">
-                <div id="quiz-card" class="glass rounded-[3rem] p-10 min-h-[400px] flex flex-col items-center justify-center relative border border-white/10">
-                    <div id="quiz-inner"></div>
-                </div>
-                <div id="quiz-btns" class="hidden mt-8 grid grid-cols-2 gap-4">
-                    <button onclick="answer(false)" class="glass p-6 rounded-3xl text-rose-400 font-bold hover:bg-rose-500/10 border-rose-500/20">まだ自信ない</button>
-                    <button onclick="answer(true)" class="glass p-6 rounded-3xl text-emerald-400 font-bold hover:bg-emerald-500/10 border-emerald-500/20">覚えた！</button>
-                </div>
+            <div id="kanjiList" class="grid grid-cols-1 gap-3"></div>
+        </div>
+
+        <div id="page-study" class="page">
+            <div id="quizContainer" class="bg-white rounded-[40px] shadow-2xl p-10 text-center min-h-[450px] flex flex-col items-center justify-center relative">
+            </div>
+            <div id="quizControls" class="hidden mt-8 grid grid-cols-2 gap-4">
+                <button onclick="checkAnswer(false)" class="bg-white border-2 border-rose-100 text-rose-500 p-5 rounded-3xl font-bold hover:bg-rose-50 transition-all shadow-sm">
+                    <i class="fas fa-times-circle text-2xl mb-1"></i><br>苦手かも
+                </button>
+                <button onclick="checkAnswer(true)" class="bg-white border-2 border-emerald-100 text-emerald-500 p-5 rounded-3xl font-bold hover:bg-emerald-50 transition-all shadow-sm">
+                    <i class="fas fa-check-circle text-2xl mb-1"></i><br>覚えた！
+                </button>
             </div>
         </div>
-    </div>
+    </main>
 
     <script>
-        // データ構造をフォルダー対応にアップグレード
-        let db = JSON.parse(localStorage.getItem('kanji_master_v4') || '{"folders": {}}');
-        let currentFolderId = null;
+        // --- データ管理ロジック ---
+        // 前回のデータ(v3Kanji)を読み込み、フォルダー形式に変換する
+        let rawData = JSON.parse(localStorage.getItem('v3Kanji') || '[]');
+        let folderDb = JSON.parse(localStorage.getItem('kanjiFolderDb') || '{}');
+
+        // 初回起動時：既存のバラのデータを「未分類」フォルダーに統合する
+        if (rawData.length > 0 && !folderDb['default']) {
+            folderDb['default'] = { name: "未分類", items: rawData };
+            localStorage.removeItem('v3Kanji'); // 古いデータは削除して一本化
+            saveDb();
+        } else if (Object.keys(folderDb).length === 0) {
+            folderDb['default'] = { name: "未分類", items: [] };
+            saveDb();
+        }
+
+        let currentFolderId = 'default';
         let currentIdx = -1;
 
-        function save() { localStorage.setItem('kanji_master_v4', JSON.stringify(db)); }
+        function saveDb() {
+            localStorage.setItem('kanjiFolderDb', JSON.stringify(folderDb));
+        }
 
-        function showPage(id) {
+        // --- UI表示ロジック ---
+        function showPage(pageId) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-            document.getElementById('page-' + id).classList.add('active');
-            if(id === 'folders') renderFolders();
+            document.getElementById('page-' + pageId).classList.add('active');
+            
+            if (pageId === 'folder-select') {
+                document.getElementById('mainNav').classList.add('hidden');
+                renderFolders();
+            } else {
+                document.getElementById('mainNav').classList.remove('hidden');
+                document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+                document.getElementById('tab-' + (pageId === 'study' ? 'study' : 'manage')).classList.add('tab-active');
+                if (pageId === 'study') startQuiz();
+                if (pageId === 'manage') updateList();
+            }
+        }
+
+        function backToFolders() { showPage('folder-select'); }
+
+        function createNewFolder() {
+            const name = prompt("フォルダー名を入力してください");
+            if (!name) return;
+            const id = 'f_' + Date.now();
+            folderDb[id] = { name: name, items: [] };
+            saveDb();
+            renderFolders();
+        }
+
+        function renderFolders() {
+            const list = document.getElementById('folderList');
+            list.innerHTML = Object.keys(folderDb).map(id => `
+                <div onclick="openFolder('${id}')" class="bg-white p-6 rounded-2xl shadow-sm flex justify-between items-center border border-slate-100 hover:border-indigo-300 transition-all cursor-pointer">
+                    <div>
+                        <div class="text-xl font-bold text-slate-700">${folderDb[id].name}</div>
+                        <div class="text-sm text-slate-400 font-bold">${folderDb[id].items.length} 漢字</div>
+                    </div>
+                    <button onclick="deleteFolder('${id}', event)" class="text-slate-300 hover:text-rose-500 p-2"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function openFolder(id) {
+            currentFolderId = id;
+            document.getElementById('currentFolderNameDisplay').innerText = folderDb[id].name;
+            showPage('manage');
+        }
+
+        function deleteFolder(id, e) {
+            e.stopPropagation();
+            if (id === 'default') return alert("デフォルトのフォルダーは削除できません");
+            if (confirm("フォルダー内の漢字も全て削除されますがよろしいですか？")) {
+                delete folderDb[id];
+                saveDb();
+                renderFolders();
+            }
+        }
+
+        // --- 漢字管理ロジック ---
+        function addKanji() {
+            const k = document.getElementById('kInput'), y = document.getElementById('yInput'), m = document.getElementById('mInput');
+            if (!k.value || !y.value) return;
+            
+            folderDb[currentFolderId].items.unshift({ k: k.value, y: y.value, m: m.value, score: 0, id: Date.now() });
+            saveDb();
+            k.value = ''; y.value = ''; m.value = '';
+            updateList();
+            showToast("追加しました！");
+        }
+
+        function updateList() {
+            const items = folderDb[currentFolderId].items;
+            const list = document.getElementById('kanjiList');
+            const total = items.length;
+            const mastered = items.filter(i => i.score >= 3).length;
+            const percent = total === 0 ? 0 : Math.round((mastered / total) * 100);
+            
+            document.getElementById('totalProgress').innerText = percent;
+            document.getElementById('progressBar').style.width = percent + '%';
+
+            list.innerHTML = items.map(item => `
+                <div class="bg-white p-5 rounded-2xl flex justify-between items-center border border-slate-100 group">
+                    <div>
+                        <div class="text-xl font-bold text-slate-700">${item.k} <span class="text-sm font-medium text-slate-400 ml-2">${item.y}</span></div>
+                        <div class="text-xs text-indigo-400 mt-1 font-bold italic">MASTER LEVEL: ${item.score}</div>
+                    </div>
+                    <button onclick="deleteKanji(${item.id})" class="text-slate-200 hover:text-rose-400 transition-colors"><i class="fas fa-trash-alt"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function deleteKanji(id) {
+            folderDb[currentFolderId].items = folderDb[currentFolderId].items.filter(i => i.id !== id);
+            saveDb();
+            updateList();
+        }
+
+        // --- クイズロジック ---
+        function startQuiz() {
+            const items = folderDb[currentFolderId].items;
+            if (items.length === 0) {
+                document.getElementById('quizContainer').innerHTML = "<p class='text-slate-400'>このフォルダーは空です</p>";
+                document.getElementById('quizControls').classList.add('hidden');
+                return;
+            }
+            document.getElementById('quizControls').classList.remove('hidden');
+            nextQuestion();
+        }
+
+        function nextQuestion() {
+            const items = folderDb[currentFolderId].items;
+            const pool = [];
+            items.forEach((item, idx) => {
+                const weight = Math.max(1, 5 - item.score);
+                for(let i=0; i<weight; i++) pool.push(idx);
+            });
+            currentIdx = pool[Math.floor(Math.random() * pool.length)];
+            const item = items[currentIdx];
+            
+            document.getElementById('quizContainer').innerHTML = `
+                <div>
+                    <div class="text-sm font-black text-indigo-300 mb-4 tracking-widest uppercase italic">Folder: ${folderDb[currentFolderId].name}</div>
+                    <div class="text-8xl font-black text-slate-800 mb-8">${item.k}</div>
+                    <div id="answerArea" class="hidden">
+                        <div class="text-4xl font-bold text-indigo-600 mb-2">${item.y}</div>
+                        <div class="text-slate-500 bg-slate-50 p-4 rounded-2xl max-w-xs mx-auto text-sm">${item.m || '---'}</div>
+                    </div>
+                    <button id="showBtn" onclick="showAnswer()" class="mt-4 bg-slate-100 text-slate-600 px-8 py-3 rounded-full font-bold hover:bg-slate-200 transition-all">
+                        答えを確認
+                    </button>
+                </div>
+            `;
+        }
+
+        function showAnswer() {
+            document.getElementById('answerArea').classList.remove('hidden');
+            document.getElementById('showBtn').classList.add('hidden');
+        }
+
+        function checkAnswer(isCorrect) {
+            if (isCorrect) {
+                folderDb[currentFolderId].items[currentIdx].score += 1;
+                showToast("レベルアップ！");
+            } else {
+                folderDb[currentFolderId].items[currentIdx].score = Math.max(0, folderDb[currentFolderId].items[currentIdx].score - 1);
+            }
+            saveDb();
+            nextQuestion();
         }
 
         function showToast(msg) {
@@ -93,114 +269,8 @@
             setTimeout(() => t.classList.remove('show'), 2000);
         }
 
-        // --- フォルダー管理 ---
-        function createFolder() {
-            const name = prompt("フォルダー名を入力");
-            if(!name) return;
-            const id = 'f_' + Date.now();
-            db.folders[id] = { name, items: [] };
-            save(); renderFolders();
-        }
-
-        function renderFolders() {
-            const list = document.getElementById('folder-list');
-            list.innerHTML = Object.keys(db.folders).map(id => `
-                <div onclick="openFolder('${id}')" class="glass p-6 rounded-3xl cursor-pointer hover:bg-white/10 flex justify-between items-center transition-all group">
-                    <div>
-                        <div class="text-xl font-bold">${db.folders[id].name}</div>
-                        <div class="text-sm text-slate-400">${db.folders[id].items.length} 漢字</div>
-                    </div>
-                    <button onclick="deleteFolder('${id}', event)" class="text-slate-600 hover:text-rose-500"><i class="fas fa-trash"></i></button>
-                </div>
-            `).join('');
-        }
-
-        function openFolder(id) {
-            currentFolderId = id;
-            document.getElementById('current-folder-title').innerText = db.folders[id].name;
-            switchTab('manage');
-            showPage('main');
-        }
-
-        function deleteFolder(id, e) {
-            e.stopPropagation();
-            if(confirm("削除しますか？")) { delete db.folders[id]; save(); renderFolders(); }
-        }
-
-        // --- タブ切り替え ---
-        function switchTab(tab) {
-            const isManage = tab === 'manage';
-            document.getElementById('tab-content-manage').classList.toggle('hidden', !isManage);
-            document.getElementById('tab-content-study').classList.toggle('hidden', isManage);
-            document.getElementById('btn-manage').className = isManage ? 'font-bold tab-active py-1' : 'font-bold text-slate-400 py-1';
-            document.getElementById('btn-study').className = !isManage ? 'font-bold tab-active py-1' : 'font-bold text-slate-400 py-1';
-            if(isManage) renderList(); else startQuiz();
-        }
-
-        // --- 漢字操作 ---
-        function addKanji() {
-            const k = document.getElementById('kInput'), y = document.getElementById('yInput'), m = document.getElementById('mInput');
-            if(!k.value || !y.value) return;
-            db.folders[currentFolderId].items.unshift({ k: k.value, y: y.value, m: m.value, score: 0, id: Date.now() });
-            save(); k.value = ''; y.value = ''; m.value = '';
-            renderList(); showToast("追加しました！");
-        }
-
-        function renderList() {
-            const list = document.getElementById('kanji-list');
-            list.innerHTML = db.folders[currentFolderId].items.map(item => `
-                <div class="glass p-5 rounded-2xl flex justify-between items-center">
-                    <div>
-                        <div class="text-xl font-bold">${item.k} <span class="text-sm font-normal opacity-50 ml-2">${item.y}</span></div>
-                        <div class="text-xs text-indigo-400 font-bold mt-1 uppercase">Level: ${item.score}</div>
-                    </div>
-                    <button onclick="deleteKanji(${item.id})" class="text-slate-600 hover:text-rose-500"><i class="fas fa-trash-alt"></i></button>
-                </div>
-            `).join('');
-        }
-
-        function deleteKanji(id) {
-            db.folders[currentFolderId].items = db.folders[currentFolderId].items.filter(i => i.id !== id);
-            save(); renderList();
-        }
-
-        // --- クイズ ---
-        function startQuiz() {
-            if(db.folders[currentFolderId].items.length === 0) {
-                document.getElementById('quiz-inner').innerHTML = "漢字を追加してください";
-                document.getElementById('quiz-btns').classList.add('hidden');
-                return;
-            }
-            document.getElementById('quiz-btns').classList.remove('hidden');
-            nextQ();
-        }
-
-        function nextQ() {
-            const items = db.folders[currentFolderId].items;
-            currentIdx = Math.floor(Math.random() * items.length);
-            const item = items[currentIdx];
-            document.getElementById('quiz-inner').innerHTML = `
-                <div class="text-8xl font-black mb-8">${item.k}</div>
-                <div id="ans" class="hidden">
-                    <div class="text-4xl font-bold text-indigo-400 mb-2">${item.y}</div>
-                    <div class="text-slate-400">${item.m || ''}</div>
-                </div>
-                <button id="show-btn" onclick="document.getElementById('ans').classList.remove('hidden'); this.classList.add('hidden')" class="bg-white/10 px-10 py-3 rounded-full font-bold">答えを見る</button>
-            `;
-        }
-
-        function answer(correct) {
-            if(correct) db.folders[currentFolderId].items[currentIdx].score++;
-            save(); nextQ();
-        }
-
-        // スタート画面からのパラメータ対応
-        window.onload = () => {
-            const urlParams = new URLSearchParams(window.location.search);
-            const mode = urlParams.get('mode');
-            if (mode) showPage('folders'); // とりあえずフォルダ一覧へ
-            renderFolders();
-        }
+        // 起動時にフォルダー一覧を表示
+        renderFolders();
     </script>
 </body>
 </html>
