@@ -1,126 +1,151 @@
+
+</html>
 <!DOCTYPE html>
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kanji Master Pro</title>
+    <title>Kanji Study Pro Max</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .page { display: none; }
+        .page.active { display: block; }
+        .tab-active { border-bottom: 4px solid #4f46e5; color: #4f46e5; }
+    </style>
 </head>
-<body class="bg-slate-50 min-h-screen text-slate-800 pb-20">
+<body class="bg-slate-100 min-h-screen pb-10">
 
-    <header class="bg-indigo-600 text-white shadow-lg p-6 mb-8">
-        <div class="max-w-4xl mx-auto flex justify-between items-center">
-            <h1 class="text-2xl font-bold flex items-center gap-2">
-                <i class="fas fa-pen-nib"></i> Kanji Master Pro
-            </h1>
-            <div id="stats" class="text-sm bg-indigo-500 px-4 py-2 rounded-full">
-                登録数: <span id="kanjiCount">0</span>
-            </div>
+    <nav class="bg-white shadow-sm mb-6 sticky top-0 z-10">
+        <div class="max-w-4xl mx-auto flex justify-around">
+            <button onclick="showPage('manage')" id="tab-manage" class="flex-1 py-4 font-bold text-slate-500 transition-all tab-active">
+                <i class="fas fa-edit mr-2"></i>管理・登録
+            </button>
+            <button onclick="showPage('study')" id="tab-study" class="flex-1 py-4 font-bold text-slate-500 transition-all">
+                <i class="fas fa-graduation-cap mr-2"></i>学習モード
+            </button>
         </div>
-    </header>
+    </nav>
 
     <main class="max-w-4xl mx-auto px-4">
         
-        <section class="bg-white rounded-2xl shadow-sm p-6 mb-8 border border-slate-100">
-            <h2 class="text-lg font-bold mb-4 flex items-center gap-2 text-indigo-600">
-                <i class="fas fa-plus-circle"></i> 新しい漢字を追加
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <input type="text" id="kanjiInput" placeholder="漢字 (例: 閃光)" class="p-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none">
-                <input type="text" id="yomiInput" placeholder="読み (例: せんこう)" class="p-3 border rounded-xl focus:ring-2 focus:ring-indigo-400 outline-none">
-                <button onclick="addKanji()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition-all shadow-md active:scale-95">
-                    追加する
+        <div id="page-manage" class="page active">
+            <section class="bg-white rounded-2xl shadow-sm p-6 mb-6">
+                <h2 class="text-xl font-bold mb-4 flex items-center gap-2"><i class="fas fa-plus text-indigo-500"></i> 新規追加</h2>
+                <div class="grid grid-cols-1 gap-3">
+                    <input type="text" id="kInput" placeholder="漢字 (例: 杜撰)" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-300">
+                    <input type="text" id="yInput" placeholder="読み (例: ずさん)" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-300">
+                    <textarea id="mInput" placeholder="意味・例文 (例: 物事の仕方がいい加減なこと)" class="p-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-300 h-24"></textarea>
+                    <button onclick="addKanji()" class="bg-indigo-600 text-white font-bold py-3 rounded-xl hover:bg-indigo-700 transition-all">リストに追加</button>
+                </div>
+            </section>
+
+            <div id="kanjiList" class="space-y-3">
+                </div>
+        </div>
+
+        <div id="page-study" class="page">
+            <div id="quizContainer" class="bg-white rounded-3xl shadow-xl overflow-hidden min-h-[400px] flex flex-col items-center justify-center p-8 text-center border-t-8 border-indigo-500">
+                <div id="emptyMsg" class="text-slate-400">漢字を3つ以上登録すると開始できます</div>
+            </div>
+            
+            <div id="quizControls" class="hidden mt-6 flex justify-center gap-4">
+                <button onclick="checkAnswer(false)" class="bg-rose-100 text-rose-600 px-8 py-4 rounded-2xl font-bold hover:bg-rose-200 transition-all flex flex-col items-center shadow-sm">
+                    <i class="fas fa-times text-2xl mb-1"></i> まだ自信ない
+                </button>
+                <button onclick="checkAnswer(true)" class="bg-emerald-100 text-emerald-600 px-8 py-4 rounded-2xl font-bold hover:bg-emerald-200 transition-all flex flex-col items-center shadow-sm">
+                    <i class="fas fa-check text-2xl mb-1"></i> 覚えた！
                 </button>
             </div>
-        </section>
+        </div>
 
-        <section id="quizSection" class="hidden mb-8">
-            <div class="bg-gradient-to-br from-indigo-500 to-purple-600 rounded-3xl p-8 text-center text-white shadow-xl relative overflow-hidden">
-                <p class="text-sm opacity-80 mb-2">学習モード (クリックで回答表示)</p>
-                <div id="quizCard" onclick="toggleAnswer()" class="cursor-pointer py-12">
-                    <h3 id="quizKanji" class="text-7xl font-bold mb-4">--</h3>
-                    <p id="quizYomi" class="text-3xl font-medium invisible bg-white/20 inline-block px-6 py-1 rounded-lg italic">--</p>
-                </div>
-                <div class="flex justify-center gap-4 mt-4">
-                    <button onclick="nextQuestion()" class="bg-white text-indigo-600 px-6 py-2 rounded-full font-bold hover:bg-indigo-50">次の問題へ</button>
-                </div>
-            </div>
-        </section>
-
-        <section>
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold">マイリスト</h2>
-                <button id="studyBtn" onclick="toggleStudyMode()" class="text-indigo-600 font-semibold border border-indigo-600 px-4 py-1 rounded-lg hover:bg-indigo-50">
-                    学習モードを開始
-                </button>
-            </div>
-            <div id="kanjiList" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                </div>
-        </section>
     </main>
 
     <script>
-        let kanjiData = JSON.parse(localStorage.getItem('proKanji') || '[]');
-        let isStudyMode = false;
+        let kanjiData = JSON.parse(localStorage.getItem('ultraKanji') || '[]');
+        let currentIdx = -1;
 
-        function save() {
-            localStorage.setItem('proKanji', JSON.stringify(kanjiData));
-            updateDisplay();
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById('page-' + pageId).classList.add('active');
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+            document.getElementById('tab-' + pageId).classList.add('tab-active');
+            
+            if (pageId === 'study') startQuiz();
+            if (pageId === 'manage') updateList();
         }
 
         function addKanji() {
-            const k = document.getElementById('kanjiInput');
-            const y = document.getElementById('yomiInput');
-            if (!k.value || !y.value) return;
-
-            kanjiData.unshift({ kanji: k.value, yomi: y.value, id: Date.now() });
-            k.value = ''; y.value = '';
-            save();
+            const k = document.getElementById('kInput'), y = document.getElementById('yInput'), m = document.getElementById('mInput');
+            if (!k.value || !y.value) return alert("漢字と読みは必須です！");
+            
+            kanjiData.unshift({ 
+                k: k.value, y: y.value, m: m.value, 
+                score: 0, id: Date.now() 
+            });
+            localStorage.setItem('ultraKanji', JSON.stringify(kanjiData));
+            k.value = ''; y.value = ''; m.value = '';
+            updateList();
+            alert("追加しました！");
         }
 
-        function deleteKanji(id) {
-            kanjiData = kanjiData.filter(item => item.id !== id);
-            save();
-        }
-
-        function updateDisplay() {
-            document.getElementById('kanjiCount').innerText = kanjiData.length;
+        function updateList() {
             const list = document.getElementById('kanjiList');
             list.innerHTML = kanjiData.map(item => `
-                <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center group hover:border-indigo-300 transition-colors">
+                <div class="bg-white p-4 rounded-xl shadow-sm flex justify-between items-center border-l-4 border-indigo-400">
                     <div>
-                        <div class="text-2xl font-bold text-slate-700">${item.kanji}</div>
-                        <div class="text-sm text-slate-500">${item.yomi}</div>
+                        <div class="text-xl font-bold">${item.k} <span class="text-sm font-normal text-slate-400">(${item.y})</span></div>
+                        <div class="text-xs text-slate-500 mt-1">${item.m || '意味なし'}</div>
+                        <div class="text-[10px] mt-2 bg-slate-100 inline-block px-2 py-0.5 rounded text-indigo-600 font-bold">習得度: ${item.score}回</div>
                     </div>
-                    <button onclick="deleteKanji(${item.id})" class="text-slate-300 hover:text-red-500 transition-colors">
-                        <i class="fas fa-trash-can"></i>
-                    </button>
+                    <button onclick="deleteKanji(${item.id})" class="text-slate-300 hover:text-red-500 p-2"><i class="fas fa-trash"></i></button>
                 </div>
             `).join('');
         }
 
-        // Quiz Logic
-        function toggleStudyMode() {
-            if (kanjiData.length === 0) return alert("まずは漢字を追加してください！");
-            isStudyMode = !isStudyMode;
-            document.getElementById('quizSection').classList.toggle('hidden');
-            document.getElementById('studyBtn').innerText = isStudyMode ? "学習モードを終了" : "学習モードを開始";
-            if (isStudyMode) nextQuestion();
+        function deleteKanji(id) {
+            kanjiData = kanjiData.filter(i => i.id !== id);
+            localStorage.setItem('ultraKanji', JSON.stringify(kanjiData));
+            updateList();
+        }
+
+        // --- クイズロジック ---
+        function startQuiz() {
+            if (kanjiData.length < 1) return;
+            document.getElementById('quizControls').classList.remove('hidden');
+            nextQuestion();
         }
 
         function nextQuestion() {
-            const random = kanjiData[Math.floor(Math.random() * kanjiData.length)];
-            document.getElementById('quizKanji').innerText = random.kanji;
-            document.getElementById('quizYomi').innerText = random.yomi;
-            document.getElementById('quizYomi').classList.add('invisible');
+            currentIdx = Math.floor(Math.random() * kanjiData.length);
+            const item = kanjiData[currentIdx];
+            const container = document.getElementById('quizContainer');
+            
+            container.innerHTML = `
+                <div class="w-full">
+                    <div class="text-7xl font-bold text-slate-800 mb-6 animate-bounce">${item.k}</div>
+                    <div id="answerArea" class="hidden space-y-4">
+                        <div class="text-3xl font-bold text-indigo-600 border-t pt-4">${item.y}</div>
+                        <div class="text-lg text-slate-600 bg-indigo-50 p-4 rounded-xl">${item.m || '（意味の登録はありません）'}</div>
+                    </div>
+                    <button id="showBtn" onclick="showAnswer()" class="mt-4 text-indigo-500 font-bold underline">答えを見る</button>
+                </div>
+            `;
         }
 
-        function toggleAnswer() {
-            document.getElementById('quizYomi').classList.toggle('invisible');
+        function showAnswer() {
+            document.getElementById('answerArea').classList.remove('hidden');
+            document.getElementById('showBtn').classList.add('hidden');
         }
 
-        updateDisplay();
+        function checkAnswer(isCorrect) {
+            if (currentIdx === -1) return;
+            if (isCorrect) kanjiData[currentIdx].score += 1;
+            localStorage.setItem('ultraKanji', JSON.stringify(kanjiData));
+            nextQuestion();
+        }
+
+        updateList();
     </script>
 </body>
 </html>
